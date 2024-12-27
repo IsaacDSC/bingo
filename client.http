@@ -1,0 +1,22 @@
+###
+POST http://localhost:3000/round
+Content-Type: application/json
+
+{
+  "roundName": "testestestestes"
+}
+
+
+
+### add user
+POST http://localhost:3000/user/card
+Content-Type: application/json
+
+{
+  "username": "isaacdsc"
+}
+
+
+### get cart the user
+GET http://localhost:3000/user/card/isaacdsc
+Content-Type: application/json

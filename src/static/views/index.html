@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+
+<nav class="mt-5 mb-5">
+    <div class="container">
+        <button type="button" class="btn btn-outline-primary" style="width: 100%;" data-bs-toggle="modal"
+                data-bs-target="#addUserModal">Adicionar usuário
+        </button>
+        <button type="button" class="btn btn-outline-primary" style="width: 100%;" data-bs-toggle="modal"
+                data-bs-target="#startGame">Iniciar uma partida
+        </button>
+    </div>
+</nav>
+
+<div class="container mt-5 bm-5" style="border: 1px solid black;">
+    <div class="mt-2 mb-2">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-6">
+                <h1 class="text-center">Mario Aparecidos e Bingo</h1>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+    <div class="mt-2 mb-2">
+        <h1 id="sortedNumber" style="font-size: 10em; text-align: center; display: none;"></h1>
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <audio id="audioPlayer" controls style="display: none;" style="width: 100%"></audio>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    <div class="mt-2 mb-2">
+        <button class="btn btn-success" style="width: 100%" onclick="nextStep()">Próximo</button>
+    </div>
+</div>
+
+<!-- Modal add user -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addUserModalLabel">Insert username</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" placeholder="Username" id="username">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="joinUser()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal start game-->
+<div class="modal fade" id="startGame" tabindex="-1" aria-labelledby="startGameLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="startGameLabel">Insert username</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" placeholder="Nome da partida" id="play_name"
+                       value="Mario Aparecidos e Bingo">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="startGame()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Raking-->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="text-center">Ranking</h1>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Nome</th>
+                            <th scope="col">Pontos</th>
+                            <th scope="col">link</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>Mark</td>
+                            <td>10</td>
+                            <td>
+                                <a href="">Link</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2</th>
+                            <td>Jacob</td>
+                            <td>9</td>
+                            <td>
+                                <a href="">Link</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">3</th>
+                            <td>Larry</td>
+                            <td>8</td>
+                            <td>
+                                <a href="">Link</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col"></div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+        integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+        crossorigin="anonymous"></script>
+
+<script>
+    const socket = io('http://localhost:3000/game', {transports: ['websocket', 'polling']});
+
+    socket.on('connect', () => {
+        console.log('Connected');
+    });
+
+    socket.on('activated-users', (data) => {
+        const tbody = document.querySelector('table tbody');
+        tbody.innerHTML = ""
+
+        data.users.forEach((user, index) => {
+            const row = document.createElement('tr');
+            const url = `http://localhost:3000/user/?username=${user.username}`;
+            row.innerHTML = `
+                <th scope="row">${index + 1}</th>
+                <td>${user.username}</td>
+                <td>0</td>
+                <td><a href="${url}" target="_blank">Link</a></td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+
+        // console.log({'activated-users': data});
+    });
+
+    function startGame() {
+        if (confirm('Confirm started game') == true) {
+            const name = document.querySelector('#play_name').value;
+            localStorage.setItem('gamer', JSON.stringify({name: name, startedAt: new Date()}));
+            socket.emit('start-game', {name: name});
+        }
+    }
+
+
+    function joinUser() {
+        const username = document.querySelector('#username').value;
+        if (!username || username.trim() === '') {
+            alert('Username is required');
+            return;
+        }
+
+        if (confirm(`Username: ${username}`) == true) {
+            const url = `http://localhost:3000/user/card?username=${username}`;
+            let userUrls = JSON.parse(localStorage.getItem('users')) || [];
+            if (!userUrls.some(e => e === url)) {
+                userUrls.push(url);
+                localStorage.setItem('users', JSON.stringify(userUrls));
+            } else {
+                alert("Usário já cadastrado");
+            }
+        }
+
+    }
+
+    socket.on('sorted', (data) => {
+        if (data.voice) {
+            const src = `http://localhost:3000${data.voice}`
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = src;
+            audioPlayer.style.display = 'block';
+            audioPlayer.play().catch(error => {
+                console.error('Error playing audio:', error);
+            });
+        }
+
+        if (data.sorted) {
+            const sortedNumber = document.getElementById('sortedNumber');
+            sortedNumber.textContent = data.sorted;
+            sortedNumber.style.display = 'block';
+        }
+    });
+
+
+    socket.emit('start-game', {for: 'everyone', message: 'hello'});
+
+    function nextStep() {
+        socket.emit('next-step')
+    }
+</script>
+
+</body>
+</html>
