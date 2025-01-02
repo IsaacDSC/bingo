@@ -1,8 +1,9 @@
 import fs from "fs";
+import {injectable} from 'inversify';
 import {GameCore, User} from "../core/game-core";
-import {IGameRepository} from "../interfaces/game";
 
-export class GameRepository implements IGameRepository {
+@injectable()
+export class GameRepository {
     private readonly fileName: string = "database.json";
 
     getData() {
@@ -42,5 +43,22 @@ export class GameRepository implements IGameRepository {
             }
         );
 
+    }
+
+    resetSorted() {
+        fs.writeFileSync(`sorted.json`, JSON.stringify([]));
+    }
+
+    getLastIndexSorted() {
+        const sortedData = fs.readFileSync(`sorted.json`, "utf8");
+        const sorting = JSON.parse(sortedData);
+        return sorting.length;
+    }
+
+    saveNumberSorted({sorted, voice}: { sorted: number, voice: string }) {
+        const sortedData = fs.readFileSync(`sorted.json`, "utf8");
+        const sorting = JSON.parse(sortedData);
+        sorting.push({sorted, voice, eventAt: new Date()});
+        fs.writeFileSync(`sorted.json`, JSON.stringify(sorting));
     }
 }
